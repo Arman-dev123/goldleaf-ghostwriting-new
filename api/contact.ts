@@ -1,32 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import { saveContactLead, checkDatabaseConnection } from "@/src/lib/supabase";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { saveContactLead, checkDatabaseConnection } from "../src/lib/supabase";
 
-export async function POST(request: NextRequest) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ success: false, error: "Method not allowed" });
+  }
+
   try {
     // Serverless functions are stateless between invocations, so verify
-    // the connection on each call rather than relying on in-memory state
-    // from a previous, possibly different, function instance.
+    // the connection on each cold start rather than relying on startup state.
     await checkDatabaseConnection();
 
-    const body = await request.json();
-    const { name, email, phone, service, budget, message } = body || {};
+    const { name, email, phone, service, budget, message } = req.body || {};
 
     if (!name || !email || !phone || !service || !message) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "All required fields (Name, Email, Phone, Service, Message) must be provided.",
-        },
-        { status: 400 }
-      );
+      return res.status(400).json({
+        success: false,
+        error: "All required fields (Name, Email, Phone, Service, Message) must be provided.",
+      });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { success: false, error: "Please provide a valid email address." },
-        { status: 400 }
-      );
+      return res.status(400).json({ success: false, error: "Please provide a valid email address." });
     }
 
     const result = await saveContactLead({
@@ -39,10 +35,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error || "Failed to log lead into database." },
-        { status: result.statusCode || 500 }
-      );
+      return res.status(result.statusCode || 500).json({
+        success: false,
+        error: result.error || "Failed to log lead into database.",
+      });
     }
 
     const responsePayload: any = {
@@ -52,12 +48,12 @@ export async function POST(request: NextRequest) {
     };
     if (result.warning) responsePayload.warning = result.warning;
 
-    return NextResponse.json(responsePayload, { status: 200 });
+    return res.status(200).json(responsePayload);
   } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] ❌ API error in /api/contact:`, err);
-    return NextResponse.json(
-      { success: false, error: "An unexpected internal server error occurred while processing your request." },
-      { status: 500 }
-    );
+    console.error(`[${new Date().toISOString()}] ❌ Vercel function error in /api/contact:`, err);
+    return res.status(500).json({
+      success: false,
+      error: "An unexpected internal server error occurred while processing your request.",
+    });
   }
 }

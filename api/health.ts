@@ -1,9 +1,9 @@
-import { NextResponse } from "next/server";
-import { checkDatabaseConnection } from "@/src/lib/supabase";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { checkDatabaseConnection } from "../src/lib/supabase";
 
-export async function GET() {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   const isConnected = await checkDatabaseConnection();
-  return NextResponse.json({
+  return res.status(200).json({
     database: isConnected ? "connected" : "disconnected",
     timestamp: new Date().toISOString(),
   });
