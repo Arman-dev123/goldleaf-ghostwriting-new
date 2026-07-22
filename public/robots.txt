@@ -1,0 +1,8 @@
+# GoldLeaf Ghostwriting Robots Instructions
+User-agent: *
+Allow: /
+
+# Prevent indexing of temporary success portals if needed
+Disallow: /api/
+
+Sitemap: https://goldleafghostwriting.com/sitemap.xml

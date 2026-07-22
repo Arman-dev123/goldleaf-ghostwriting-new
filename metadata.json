@@ -1,0 +1,6 @@
+{
+  "name": "GoldLeaf Ghostwriting",
+  "description": "Premium ghostwriting agency website featuring professional writing, publishing, and editing services.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
