@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { saveContactLead, checkDatabaseConnection } from "../src/lib/supabase";
+import { saveCouponLead, checkDatabaseConnection } from "../../src/lib/supabase";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
@@ -7,16 +7,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Serverless functions are stateless between invocations, so verify
-    // the connection on each cold start rather than relying on startup state.
     await checkDatabaseConnection();
 
-    const { name, email, phone, service, budget, message } = req.body || {};
+    const { name, email, phone } = req.body || {};
 
-    if (!name || !email || !phone || !service || !message) {
+    if (!name || !email || !phone) {
       return res.status(400).json({
         success: false,
-        error: "All required fields (Name, Email, Phone, Service, Message) must be provided.",
+        error: "All required fields (Name, Email, Phone) must be provided.",
       });
     }
 
@@ -25,32 +23,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ success: false, error: "Please provide a valid email address." });
     }
 
-    const result = await saveContactLead({
-      name,
-      email,
-      phone,
-      service,
-      budget: budget || "Not specified",
-      message,
-    });
+    const result = await saveCouponLead({ name, email, phone });
 
     if (!result.success) {
       return res.status(result.statusCode || 500).json({
         success: false,
-        error: result.error || "Failed to log lead into database.",
+        error: result.error || "Failed to log coupon into database.",
       });
     }
 
     const responsePayload: any = {
       success: true,
-      message: "Contact lead secured successfully.",
+      message: "Exclusive coupon registered successfully.",
       data: result.data,
     };
     if (result.warning) responsePayload.warning = result.warning;
 
     return res.status(200).json(responsePayload);
   } catch (err: any) {
-    console.error(`[${new Date().toISOString()}] ❌ Vercel function error in /api/contact:`, err);
+    console.error(`[${new Date().toISOString()}] ❌ Vercel function error in /api/coupon:`, err);
     return res.status(500).json({
       success: false,
       error: "An unexpected internal server error occurred while processing your request.",
