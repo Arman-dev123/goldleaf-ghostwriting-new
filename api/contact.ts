@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { saveContactLead, checkDatabaseConnection } from "../src/lib/supabase";
+import { saveContactLead, checkDatabaseConnection } from "../src/lib/supabase.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {

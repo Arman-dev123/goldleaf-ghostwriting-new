@@ -1,5 +1,6 @@
+
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { checkDatabaseConnection } from "../src/lib/supabase";
+import { checkDatabaseConnection } from "../src/lib/supabase.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const isConnected = await checkDatabaseConnection();
